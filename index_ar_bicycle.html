@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AR Bicycle Simulator</title>
+<script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+<script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+<style>
+body{margin:0;overflow:hidden;font-family:Arial,sans-serif}
+#hud{position:fixed;top:10px;left:10px;z-index:999;background:rgba(0,0,0,.65);color:#fff;padding:10px;border-radius:10px}
+.controls{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:999}
+button{padding:10px 15px;margin:4px;border:none;border-radius:8px;color:#fff;cursor:pointer}
+.start{background:#28a745}.stop{background:#dc3545}.speed{background:#007bff}
+</style>
+</head>
+<body>
+<div id="hud">
+<div>Speed: <span id="speed">10</span> km/h</div>
+<div>Distance: <span id="distance">0.0</span> m</div>
+</div>
+<div class="controls">
+<button class="speed" onclick="slowDown()">-</button>
+<button class="start" onclick="startRide()">🚴 Start</button>
+<button class="stop" onclick="stopRide()">Stop</button>
+<button class="speed" onclick="speedUp()">+</button>
+</div>
+<a-scene embedded arjs="sourceType: webcam; debugUIEnabled:false;">
+<a-assets></a-assets>
+<a-marker preset="hiro">
+<a-entity id="bike" position="0 0.5 0">
+<a-box color="#1565C0" width="1" height="0.08" depth="0.08"></a-box>
+<a-torus id="frontWheel" radius="0.25" radius-tubular="0.03" position="0.5 -0.2 0" rotation="90 0 0" color="black"></a-torus>
+<a-torus id="rearWheel" radius="0.25" radius-tubular="0.03" position="-0.5 -0.2 0" rotation="90 0 0" color="black"></a-torus>
+</a-entity>
+</a-marker>
+<a-entity camera></a-entity>
+</a-scene>
+<script>
+let speed=10,riding=false,distance=0;
+function speedUp(){speed+=5;document.getElementById('speed').textContent=speed}
+function slowDown(){speed=Math.max(5,speed-5);document.getElementById('speed').textContent=speed}
+function startRide(){riding=true}
+function stopRide(){riding=false}
+AFRAME.registerComponent('wheel-spin',{tick:function(t,d){if(!riding)return;let r=this.el.getAttribute('rotation');r.z+=d*0.5*(speed/10);this.el.setAttribute('rotation',r);}});
+AFRAME.registerComponent('bike-move',{tick:function(t,d){if(!riding)return;distance+=(speed/3.6)*(d/1000);document.getElementById('distance').textContent=distance.toFixed(1);}});
+window.onload=()=>{document.querySelector('#frontWheel').setAttribute('wheel-spin','');document.querySelector('#rearWheel').setAttribute('wheel-spin','');document.querySelector('#bike').setAttribute('bike-move','');};
+</script>
+</body>
+</html>
